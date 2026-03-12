@@ -20,7 +20,6 @@ jobs:
       - name: Build and push app image
         uses: docker/build-push-action@v5
         with:
-          context: "2. HTML Database"
-          file: "2. HTML Database/Dockerfile"
+          context: ./2. HTML Database
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/2htmldatabase-app:latest
