@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hobby Tracker 🎈</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #fef9f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 24px;
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #2d2d2d;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      color: #999;
+      font-size: 15px;
+      margin-bottom: 32px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #aaa;
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      color: #555;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #eee;
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: 'Nunito', sans-serif;
+      outline: none;
+      margin-bottom: 16px;
+      transition: border 0.2s;
+    }
+
+    input:focus { border-color: #f4a261; }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: 'Nunito', sans-serif;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+
+    button:active { transform: scale(0.98); }
+
+    .btn-add {
+      background: #f4a261;
+      color: white;
+      margin-bottom: 32px;
+    }
+
+    .btn-add:hover { opacity: 0.9; }
+
+    .btn-find {
+      background: #264653;
+      color: white;
+    }
+
+    .btn-find:hover { opacity: 0.9; }
+
+    .divider {
+      border: none;
+      border-top: 2px dashed #f0f0f0;
+      margin-bottom: 28px;
+    }
+
+    .message {
+      margin-top: 16px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      display: none;
+    }
+
+    .message.success { background: #d4edda; color: #2a6b3a; }
+    .message.error   { background: #ffe0e0; color: #b33; }
+    .message.info    { background: #e8f4f8; color: #264653; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🎈 Hobby Tracker</h1>
+    <p class="subtitle">Save your name and hobby, or look one up!</p>
+
+    <!-- ADD SECTION -->
+    <p class="section-title">✏️ Add Someone</p>
+
+    <label for="addName">Your Name</label>
+    <input id="addName" type="text" placeholder="e.g. Alice" />
+
+    <label for="addHobby">Your Hobby</label>
+    <input id="addHobby" type="text" placeholder="e.g. Painting" />
+
+    <button class="btn-add" onclick="addEntry()">➕ Save to Database</button>
+    <div id="addMsg" class="message"></div>
+
+    <hr class="divider" />
+
+    <!-- FIND SECTION -->
+    <p class="section-title">🔍 Find a Hobby</p>
+
+    <label for="findName">Search by Name</label>
+    <input id="findName" type="text" placeholder="e.g. Alice" />
+
+    <button class="btn-find" onclick="findHobby()">🔍 Find Hobby</button>
+    <div id="findMsg" class="message"></div>
+  </div>
+
+  <script>
+    function showMsg(id, text, type) {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.className = `message ${type}`;
+      el.style.display = 'block';
+    }
+
+    async function addEntry() {
+      const name  = document.getElementById('addName').value.trim();
+      const hobby = document.getElementById('addHobby').value.trim();
+
+      if (!name || !hobby) return showMsg('addMsg', '⚠️ Please fill in both fields!', 'error');
+
+      const res  = await fetch('/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, hobby })
+      });
+      const data = await res.json();
+      showMsg('addMsg', data.message || data.error, res.ok ? 'success' : 'error');
+
+      if (res.ok) {
+        document.getElementById('addName').value  = '';
+        document.getElementById('addHobby').value = '';
+      }
+    }
+
+    async function findHobby() {
+      const name = document.getElementById('findName').value.trim();
+      if (!name) return showMsg('findMsg', '⚠️ Please enter a name!', 'error');
+
+      const res  = await fetch(`/find?name=${encodeURIComponent(name)}`);
+      const data = await res.json();
+      showMsg('findMsg', data.message || data.error, res.ok ? 'info' : 'error');
+    }
+  </script>
+</body>
+</html>
